@@ -12,13 +12,12 @@ public class CasinoManager : MonoBehaviour
 	private BankSystem bankSystem;
 	
 	public Casino[] Casinos { get;private set; } = new Casino[6];
-
-
+	
 	public void SetCasinoPrices()
 	{
 		foreach (var casino in Casinos)
 		{
-			casino.SetPrice();
+			//casino.SetPrice();
 		}
 	}
 	

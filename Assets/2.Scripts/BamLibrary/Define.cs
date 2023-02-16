@@ -12,4 +12,10 @@ public static class Define
         Try,
         Success
     }
+
+    public enum DiceType
+    {
+        Player = 0,
+        Special
+    }
 }

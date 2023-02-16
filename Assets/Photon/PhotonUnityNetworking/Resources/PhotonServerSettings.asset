@@ -28,7 +28,7 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  DevRegion: 
+  DevRegion: kr
   PunLogging: 0
   EnableSupportLogger: 0
   RunInBackground: 1
@@ -42,6 +42,15 @@ MonoBehaviour:
   - RPC_PlayGame
   - RPC_Ready
   - RPC_RefreshJoinedPlayer
+  - RPC_InitGame
+  - RPC_SetRandomTurn
+  - RPC_StartMyTurn
+  - RPC_RollDice
+  - RPC_ChangeDiceColor
+  - RPC_SetActivate
+  - RPC_EndMyTurn
+  - RPC_SetTurnQueue
+  - RPC_InitPlayers
   DisableAutoOpenWizard: 1
   ShowSettings: 0
-  DevRegionSetOnce: 0
+  DevRegionSetOnce: 1
