@@ -11,10 +11,12 @@ public class Player : MonoBehaviourPun
 {
 	private PhotonView pv;
 	public PlayerModel Model { get; private set; } = new();
+	private DiceManager diceManager;
 	
 	private void Awake()
 	{
 		pv = GetComponent<PhotonView>();
+		diceManager = FindObjectOfType<DiceManager>();
 		
 		GameManager.Instance.TurnSystem.PlayerList.Add(this);
 		GameManager.Instance.IngamePresenter.DiceRollAction += RollDice;
@@ -37,9 +39,9 @@ public class Player : MonoBehaviourPun
 		}).AddTo(gameObject);
 	}
 
-	public void InitPlayer(int specialDiceAmount)
+	public void InitPlayer()
 	{
-		Model.ResetDice(specialDiceAmount);
+		Model.ResetDice(diceManager.SpecialDiceCount);
 		GameManager.Instance.IngamePresenter.SetButtonActivateEvent(this);
 	}
 
@@ -73,6 +75,6 @@ public class Player : MonoBehaviourPun
 	/// 마스터에게 주사위 굴리는거 요청
 	/// </summary>
 	[PunRPC]
-	private void RPC_RollDice() => DiceManager.Instance.RollDice();
+	private void RPC_RollDice() => diceManager.RollDice();
 
 }

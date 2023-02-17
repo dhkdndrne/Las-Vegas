@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Bam.Singleton;
 using Photon.Pun;
 using TMPro;
+using UniRx;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
@@ -18,7 +19,7 @@ public class GameManager : Singleton<GameManager>
     #region Field
 
 	private PhotonView pv;
-
+	public Action InitAction;
     #endregion
 	
 	private void Awake()
@@ -32,11 +33,10 @@ public class GameManager : Singleton<GameManager>
 	/// </summary>
 	public void InitGame()
 	{
-		DiceManager.Instance.InitDice();
+		//DiceManager.Instance.InitDice();
+		InitAction?.Invoke();
 		
 		TurnSystem.SetRandomTurn();
-		
 		TurnSystem.StartNextTurn();
-		//카지노 가격 설정
 	}
 }

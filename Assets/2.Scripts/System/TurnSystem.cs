@@ -73,7 +73,7 @@ public class TurnSystem : MonoBehaviour
     {
         foreach (var player in PlayerList)
         {
-            player.InitPlayer(DiceManager.Instance.SpecialDiceCount);
+            player.InitPlayer();
         }
     }
 }

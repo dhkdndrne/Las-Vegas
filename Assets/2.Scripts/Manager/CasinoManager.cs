@@ -7,18 +7,24 @@ using UnityEngine;
 public class CasinoManager : MonoBehaviour
 {
 	private PhotonView pv;
-	public PhotonView PV { get => pv; }
 
-	private BankSystem bankSystem;
-	
-	public Casino[] Casinos { get;private set; } = new Casino[6];
-	
+	private BankSystem bankSystem = new();
+
+	[field: SerializeField] public Casino[] Casinos { get; private set; } = new Casino[6];
+
+	private void Start()
+	{
+		GameManager.Instance.InitAction += bankSystem.Init;
+		GameManager.Instance.InitAction += SetCasinoPrices;
+	}
+
 	public void SetCasinoPrices()
 	{
 		foreach (var casino in Casinos)
 		{
-			//casino.SetPrice();
+			casino.SetPrize(bankSystem.GetRandomMoney());
+			UtilClass.DebugLog("-----------------",Define.LogType.LogError);
 		}
 	}
-	
+
 }
