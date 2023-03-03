@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "CardSo",fileName = "CardSo")]
-public class CardData :  ScriptableObject
+[CreateAssetMenu(menuName = "MoneySO",fileName = "MonsySO")]
+public class MoneyData :ScriptableObject
 {
     [SerializeField] private Sprite characterImage;
     [SerializeField] private Sprite cardImage;

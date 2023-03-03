@@ -10,18 +10,20 @@ using UnityEngine;
 public class Player : MonoBehaviourPun
 {
 	private PhotonView pv;
-	public PlayerModel Model { get; private set; } = new();
 	private DiceManager diceManager;
+
+	public PhotonView PV => pv;
+	public PlayerModel Model { get; private set; } = new();
 	
 	private void Awake()
 	{
 		pv = GetComponent<PhotonView>();
 		diceManager = FindObjectOfType<DiceManager>();
-		
+
 		GameManager.Instance.TurnSystem.PlayerList.Add(this);
 		GameManager.Instance.IngamePresenter.DiceRollAction += RollDice;
-		
-		this.UpdateAsObservable().Where(_ => Model.IsMyTurn.Value).Subscribe(_ =>
+
+		this.UpdateAsObservable().Where(_ => pv.IsMine && Model.IsMyTurn.Value && Model.IsBettingTime.Value).Subscribe(_ =>
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
@@ -32,7 +34,20 @@ public class Player : MonoBehaviourPun
 				{
 					if (hit.transform.TryGetComponent(out Casino casino))
 					{
-						//주사위 배팅 넣자
+						int casinoNum = casino.CasinoNum;
+						string playerID = PhotonNetwork.LocalPlayer.NickName;
+
+						//주사위가 없으면 리턴
+						if (diceManager.DiceNumberDic[casinoNum] == 0 && diceManager.DiceNumberDic[-casinoNum] == 0) return;
+
+						//카지노에 주사위 베팅
+						casino.PV.RPC(nameof(casino.RPC_BetDice), RpcTarget.All, playerID, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
+
+						//주사위 개수 업데이트
+						pv.RPC(nameof(RPC_UpdateDiceAmount), RpcTarget.All, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
+
+						//베팅 끝
+						Model.IsBettingTime.Value = false;
 					}
 				}
 			}
@@ -49,32 +64,29 @@ public class Player : MonoBehaviourPun
 	{
 		if (pv.IsMine && Model.IsMyTurn.Value)
 		{
-			pv.RPC(nameof(RPC_RollDice),RpcTarget.MasterClient);
+			pv.RPC(nameof(RPC_RollDice), RpcTarget.MasterClient);
 		}
 	}
-
-	public void StartMyTurn() => pv.RPC(nameof(RPC_StartMyTurn), RpcTarget.All);
-	public void EndMyTurn() =>pv.RPC(nameof(RPC_EndMyTurn), RpcTarget.All);
 	
 	[PunRPC]
-	private void RPC_StartMyTurn()
+	private void RPC_UpdateDiceAmount(int diceAmount, int sDiceAmount)
+	{
+		Model.UpdateDiceAmount(diceAmount, sDiceAmount);
+	}
+
+	[PunRPC]
+	public void RPC_StartMyTurn()
 	{
 		if (pv.IsMine)
 			Model.IsMyTurn.Value = true;
-		
-	}
-
-	[PunRPC]
-	private void RPC_EndMyTurn()
-	{
-		if (pv.IsMine)
-			Model.IsMyTurn.Value = false;
 	}
 	
 	/// <summary>
 	/// 마스터에게 주사위 굴리는거 요청
 	/// </summary>
 	[PunRPC]
-	private void RPC_RollDice() => diceManager.RollDice();
+	private void RPC_RollDice() => diceManager.RollDice().Forget();
 
+	[PunRPC]
+	public void RPC_BettingTime() => Model.IsBettingTime.Value = true;
 }

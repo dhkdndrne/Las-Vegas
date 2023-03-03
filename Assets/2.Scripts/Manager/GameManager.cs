@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Bam.Singleton;
+using Cysharp.Threading.Tasks;
 using Photon.Pun;
-using TMPro;
-using UniRx;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
@@ -22,8 +21,9 @@ public class GameManager : Singleton<GameManager>
 	public Action InitAction;
     #endregion
 	
-	private void Awake()
+	protected override void Awake()
 	{
+		base.Awake();
 		pv = GetComponent<PhotonView>();
 		TurnSystem = GetComponent<TurnSystem>();
 	}
@@ -31,12 +31,13 @@ public class GameManager : Singleton<GameManager>
 	/// <summary>
 	/// Master Client만 실행
 	/// </summary>
-	public void InitGame()
+	public async UniTaskVoid InitGame()
 	{
-		//DiceManager.Instance.InitDice();
 		InitAction?.Invoke();
-		
 		TurnSystem.SetRandomTurn();
+
+		await UniTask.Delay(3000);
 		TurnSystem.StartNextTurn();
 	}
+
 }

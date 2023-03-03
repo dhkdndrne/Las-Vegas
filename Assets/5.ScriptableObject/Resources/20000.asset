@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 702f062f20d1a804c92a1754e42683a4, type: 3}
-  m_Name: 30000
+  m_Script: {fileID: 11500000, guid: 8aa040f7649ea114bb0c5c8028008732, type: 3}
+  m_Name: 20000
   m_EditorClassIdentifier: 
-  characterImage: {fileID: -1021041478, guid: 71ad172f81917dc4c88b385499ba85c4, type: 3}
-  cardImage: {fileID: 21300000, guid: 62b72cc87600253469f24a7ba49eeaf2, type: 3}
-  price: 30000
+  characterImage: {fileID: 21300000, guid: 06560fbad14eca647a1966ada0fa4af8, type: 3}
+  cardImage: {fileID: -724082604, guid: 71ad172f81917dc4c88b385499ba85c4, type: 3}
+  price: 20000

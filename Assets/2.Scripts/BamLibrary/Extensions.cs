@@ -68,6 +68,11 @@ namespace Bam.Extensions
             return value > 0 ? value : -value;
         }
 
+        public static float Abs(float value)
+        {
+            return value > 0 ? value : -value;
+        }
+
         /// <param name="a">밑</param>
         /// <param name="b">지수</param>
         /// <returns>밑을 지수곱만큼 제곱한 결괏값(int)</returns>

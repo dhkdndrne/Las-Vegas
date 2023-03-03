@@ -51,6 +51,19 @@ MonoBehaviour:
   - RPC_EndMyTurn
   - RPC_SetTurnQueue
   - RPC_InitPlayers
+  - Test
+  - Init_RPC
+  - CardMove_RPC
+  - ChangeSoringOrder_RPC
+  - ShowDiceUI_RPC
+  - RPC_BetDice
+  - RPC_ShowDiceUI
+  - RPC_UpdateDiceAmount
+  - RPC_TurnOffDiceUI
+  - RPC_BettingTime
+  - RPC_RefreshDiceAmount
+  - RPC_RefreshRolledDice
+  - RPC_RefreshSpecialDice
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

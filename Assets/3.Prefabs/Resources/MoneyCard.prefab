@@ -152,7 +152,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6430582237776476166
 RectTransform:
   m_ObjectHideFlags: 0
@@ -379,7 +379,7 @@ GameObject:
   - component: {fileID: 6352640953917960002}
   - component: {fileID: 4699820951967589406}
   m_Layer: 0
-  m_Name: Money - GameObject
+  m_Name: MoneyCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -410,15 +410,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 6150567639168650639}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4833597551f8c54ca524290c608a6c2, type: 3}
+  m_Script: {fileID: 11500000, guid: 456c2c3f35c651b4395a6d33ad867c64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardData: {fileID: 0}
   cardFront: {fileID: 3738754720143705158}
   cardBack: {fileID: 8931568033447118024}
   charImage: {fileID: 6114792311706418588}
   bgImage: {fileID: 5964551113824245906}
   priceText: {fileID: 2465397728649486235}
+  canv: {fileID: 0}
 --- !u!114 &6352640953917960002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -525,7 +525,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
-  m_SortingLayerID: 0
+  m_SortingLayerID: 1696531537
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &3470224873962063028

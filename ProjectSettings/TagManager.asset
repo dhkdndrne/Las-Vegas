@@ -39,6 +39,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Money
+    uniqueID: 1696531537
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
