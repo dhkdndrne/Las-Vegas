@@ -14,7 +14,7 @@ public class Player : MonoBehaviourPun
 
 	public PhotonView PV => pv;
 	public PlayerModel Model { get; private set; } = new();
-	
+
 	private void Awake()
 	{
 		pv = GetComponent<PhotonView>();
@@ -28,9 +28,9 @@ public class Player : MonoBehaviourPun
 			if (Input.GetMouseButtonDown(0))
 			{
 				Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-				RaycastHit hit;
+				RaycastHit[] hits = Physics.RaycastAll(ray);
 
-				if (Physics.Raycast(ray, out hit))
+				foreach (var hit in hits)
 				{
 					if (hit.transform.TryGetComponent(out Casino casino))
 					{
@@ -54,10 +54,10 @@ public class Player : MonoBehaviourPun
 		}).AddTo(gameObject);
 	}
 
-	public void InitPlayer()
+	public void InitPlayer(int playerNumber)
 	{
-		Model.ResetDice(diceManager.SpecialDiceCount);
-		GameManager.Instance.IngamePresenter.SetButtonActivateEvent(this);
+		Model.InitModel(playerNumber,diceManager.SpecialDiceCount);
+		GameManager.Instance.IngamePresenter.InitUIEvent(this);
 	}
 
 	private void RollDice()
@@ -67,11 +67,12 @@ public class Player : MonoBehaviourPun
 			pv.RPC(nameof(RPC_RollDice), RpcTarget.MasterClient);
 		}
 	}
-	
+
 	[PunRPC]
 	private void RPC_UpdateDiceAmount(int diceAmount, int sDiceAmount)
 	{
-		Model.UpdateDiceAmount(diceAmount, sDiceAmount);
+		if (pv.IsMine)
+			Model.UpdateDiceAmount(diceAmount, sDiceAmount);
 	}
 
 	[PunRPC]
@@ -80,7 +81,7 @@ public class Player : MonoBehaviourPun
 		if (pv.IsMine)
 			Model.IsMyTurn.Value = true;
 	}
-	
+
 	/// <summary>
 	/// 마스터에게 주사위 굴리는거 요청
 	/// </summary>
@@ -89,4 +90,7 @@ public class Player : MonoBehaviourPun
 
 	[PunRPC]
 	public void RPC_BettingTime() => Model.IsBettingTime.Value = true;
+
+	[PunRPC]
+	public void RPC_GetMoney(int money) => Model.Money.Value += money;
 }

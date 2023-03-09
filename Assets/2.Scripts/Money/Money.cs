@@ -6,6 +6,7 @@ using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class Money : MonoBehaviour
 {
@@ -26,11 +27,11 @@ public class Money : MonoBehaviour
 		canv = GetComponentInChildren<Canvas>();
 	}
 
-	public void Init(string moneyID, Vector3 v3Pos) => pv.RPC(nameof(Init_RPC), RpcTarget.All, moneyID, v3Pos);
+	public void Init(string moneyID, Vector3 v3Pos) => pv.RPC(nameof(RPC_Init), RpcTarget.All, moneyID, v3Pos);
 
 
 	[PunRPC]
-	private void Init_RPC(string moneyID, Vector3 v3Pos)
+	private void RPC_Init(string moneyID, Vector3 v3Pos)
 	{
 		MoneyData = Resources.Load<MoneyData>(moneyID);
 
@@ -42,10 +43,10 @@ public class Money : MonoBehaviour
 		cardBack.SetActive(true);
 	}
 
-	public void MoveToPostition(Vector3 v3TargetPos) => pv.RPC(nameof(CardMove_RPC),RpcTarget.All,v3TargetPos);
+	public void MoveToPostition(Vector3 v3TargetPos) => pv.RPC(nameof(RPC_CardMove),RpcTarget.All,v3TargetPos);
 	
 	[PunRPC]
-	private async UniTaskVoid CardMove_RPC(Vector3 v3TargetPos)
+	private async UniTaskVoid RPC_CardMove(Vector3 v3TargetPos)
 	{
 		 await UniTask.Delay(1000);
 		 await transform.DOMove(v3TargetPos, 1f);

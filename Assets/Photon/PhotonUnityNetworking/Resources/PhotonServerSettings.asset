@@ -64,6 +64,13 @@ MonoBehaviour:
   - RPC_RefreshDiceAmount
   - RPC_RefreshRolledDice
   - RPC_RefreshSpecialDice
+  - RPC_GetMoney
+  - RPC_TurnOffDiceObject
+  - RPC_SetGameStartEnd
+  - RPC_Test
+  - RPC_CardMove
+  - RPC_Init
+  - RPC_InitCasino
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -145,7 +145,7 @@ public class LobbyRoomPresenter : MonoBehaviour
 	private IEnumerator Co_InitGame()
 	{
 		yield return new WaitForSeconds(1f);
-		GameManager.Instance.InitGame();
+		GameManager.Instance.InitGame().Forget();
 	}
 	
 	/// <summary>

@@ -15,7 +15,7 @@ public class TurnSystem : MonoBehaviour
 
 	private int playingPlayerIndex;
 	private PhotonView pv;
-	
+
 	private void Awake()
 	{
 		pv = GetComponent<PhotonView>();
@@ -54,7 +54,7 @@ public class TurnSystem : MonoBehaviour
 	private void RPC_SetTurnQueue(int[] viewIDArr)
 	{
 		List<Player> tempList = new();
-		
+
 		for (int i = 0; i < viewIDArr.Length; i++)
 		{
 			foreach (var player in PlayerList)
@@ -73,9 +73,9 @@ public class TurnSystem : MonoBehaviour
 	[PunRPC]
 	private void RPC_InitPlayers()
 	{
-		foreach (var player in PlayerList)
+		for (int i = 0; i < PlayerList.Count; i++)
 		{
-			player.InitPlayer();
+			PlayerList[i].InitPlayer(i);
 		}
 	}
 }

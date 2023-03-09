@@ -5,6 +5,7 @@ using Bam.Singleton;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -19,7 +20,8 @@ public class GameManager : Singleton<GameManager>
 
 	private PhotonView pv;
 	public Action InitAction;
-    #endregion
+	public bool IsGameStarted { get; private set; }
+	#endregion
 	
 	protected override void Awake()
 	{
@@ -38,6 +40,10 @@ public class GameManager : Singleton<GameManager>
 
 		await UniTask.Delay(3000);
 		TurnSystem.StartNextTurn();
+		
+		pv.RPC(nameof(RPC_SetGameStartEnd),RpcTarget.All,true);
 	}
 
+	[PunRPC]
+	private void RPC_SetGameStartEnd(bool value) => IsGameStarted = value;
 }

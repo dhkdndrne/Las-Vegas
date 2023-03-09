@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "MoneySO",fileName = "MonsySO")]
+[Serializable]
 public class MoneyData :ScriptableObject
 {
     [SerializeField] private Sprite characterImage;
