@@ -71,6 +71,8 @@ MonoBehaviour:
   - RPC_CardMove
   - RPC_Init
   - RPC_InitCasino
+  - RPC_ClientMoneyInit
+  - RPC_ClientCardSuffle
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

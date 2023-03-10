@@ -35,13 +35,11 @@ public class Player : MonoBehaviourPun
 					if (hit.transform.TryGetComponent(out Casino casino))
 					{
 						int casinoNum = casino.CasinoNum;
-						string playerID = PhotonNetwork.LocalPlayer.NickName;
-
 						//주사위가 없으면 리턴
 						if (diceManager.DiceNumberDic[casinoNum] == 0 && diceManager.DiceNumberDic[-casinoNum] == 0) return;
 
 						//카지노에 주사위 베팅
-						casino.PV.RPC(nameof(casino.RPC_BetDice), RpcTarget.All, playerID, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
+						casino.PV.RPC(nameof(casino.RPC_BetDice), RpcTarget.All, PhotonNetwork.LocalPlayer.NickName, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
 
 						//주사위 개수 업데이트
 						pv.RPC(nameof(RPC_UpdateDiceAmount), RpcTarget.All, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
@@ -56,7 +54,7 @@ public class Player : MonoBehaviourPun
 
 	public void InitPlayer(int playerNumber)
 	{
-		Model.InitModel(playerNumber,diceManager.SpecialDiceCount);
+		Model.InitModel(playerNumber, diceManager.SpecialDiceCount);
 		GameManager.Instance.IngamePresenter.InitUIEvent(this);
 	}
 

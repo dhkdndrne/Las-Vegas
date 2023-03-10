@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 [Serializable]
-public class BankSystem
+public class BankSystem : MonoBehaviour
 {
 	[SerializeField] private Transform deckposition;
-	
 	private readonly string MONEYCARDNAME = "MoneyCard";
 
 	// 돈 카드 54장(6만불, 7만불, 8만불, 9만불 각 5장씩 / 1만불, 4만불, 5만불 각 6장씩 / 2만불, 3만불 각 8장씩)
@@ -19,7 +19,7 @@ public class BankSystem
 		{ 10000, 6 }, { 20000, 8 }, { 30000, 8 }, { 40000, 6 }, { 50000, 6 }, { 60000, 5 }, { 70000, 5 }, { 80000, 5 }, { 90000, 5 }
 	};
 
-	private List<Money> moneyCardList = new();
+	[SerializeField] private List<Money> moneyCardList = new();
 	private List<Money> usedMoneyCardList = new();
 
 	public void Init()
@@ -31,22 +31,55 @@ public class BankSystem
 			for (int i = 0; i < money.Value; i++)
 			{
 				// 돈 카드 오브젝트 생성 및 초기화
-				var card = PhotonNetwork.Instantiate(MONEYCARDNAME,Vector3.one, Quaternion.identity).GetComponent<Money>();
-				card.Init(money.Key.ToString(),deckposition.position);
+				var card = PhotonNetwork.Instantiate(MONEYCARDNAME, Vector3.one, Quaternion.identity).GetComponent<Money>();
+				card.Init(money.Key.ToString(), deckposition.position);
 				moneyCardList.Add(card);
 			}
 			index++;
 		}
-
+		
 		//돈 섞기
 		for (int i = moneyCardList.Count - 1; i > 0; i--)
 		{
 			int random = Random.Range(0, i);
 			(moneyCardList[i], moneyCardList[random]) = (moneyCardList[random], moneyCardList[i]);
 		}
+
+		var cardPvIDArray = moneyCardList.Select(card => card.GetComponent<PhotonView>().ViewID).ToArray();
+		
+		var pv = GetComponent<PhotonView>();
+
+		// 클라이언트 은행 초기화
+		pv.RPC(nameof(RPC_ClientMoneyInit), RpcTarget.Others);
+		pv.RPC(nameof(RPC_ClientCardSuffle),RpcTarget.Others,cardPvIDArray);
+
 	}
 
-	public List<Money> GetRandomMoney()
+	[PunRPC]
+	private void RPC_ClientCardSuffle(int[] cardPVID)
+	{
+		List<Money> tempList = new();
+		for (int i = 0; i < cardPVID.Length; i++)
+		{
+			foreach (var card in moneyCardList)
+			{
+				if (card.GetComponent<PhotonView>().ViewID == cardPVID[i])
+				{
+					tempList.Add(card);
+				}
+			}
+		}
+		moneyCardList = tempList;
+	}
+
+	[PunRPC]
+	private void RPC_ClientMoneyInit()
+	{
+		var moneys = FindObjectsOfType<Money>();
+		moneyCardList.AddRange(moneys.ToList());
+	}
+
+	public List<Money> GetPrizeList()
 	{
 		List<Money> list = new();
 

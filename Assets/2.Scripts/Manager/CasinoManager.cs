@@ -6,26 +6,27 @@ using UnityEngine;
 using Bam.Singleton;
 public class CasinoManager : Singleton<CasinoManager>
 {
-	[SerializeField] private BankSystem bankSystem = new();
+	private BankSystem bankSystem;
 
 	[field: SerializeField] public Casino[] Casinos { get; private set; } = new Casino[6];
 
 	private PhotonView pv;
-	
+
 	private void Start()
 	{
 		pv = GetComponent<PhotonView>();
-		
+		bankSystem = GetComponent<BankSystem>();
+
 		GameManager.Instance.InitAction += bankSystem.Init;
-		GameManager.Instance.InitAction += InitCasino;
-
+		GameManager.Instance.InitAction += () => pv.RPC(nameof(RPC_InitCasino), RpcTarget.All);
 	}
-
-	public void InitCasino()
-	{		
+	
+	[PunRPC]
+	private void RPC_InitCasino()
+	{
 		foreach (var casino in Casinos)
 		{
-			casino.SetPrize(bankSystem.GetRandomMoney());
+			casino.SetPrize(bankSystem.GetPrizeList());
 		}
 	}
 }

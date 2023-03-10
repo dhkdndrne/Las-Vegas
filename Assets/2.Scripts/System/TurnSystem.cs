@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 public class TurnSystem : MonoBehaviour
 {
-	public List<Player> PlayerList { get; private set; } = new();
+	[field: SerializeField]public List<Player> PlayerList { get; private set; } = new();
 
 	public Player NowPlayingPlayer { get; private set; }
 
@@ -31,13 +31,8 @@ public class TurnSystem : MonoBehaviour
 			(PlayerList[index1], PlayerList[index2]) = (PlayerList[index2], PlayerList[index1]);
 		}
 
-		int[] viewIDArr = new int[PlayerList.Count];
-
-		for (int i = 0; i < PlayerList.Count; i++)
-		{
-			viewIDArr[i] = PlayerList[i].GetComponent<PhotonView>().ViewID;
-		}
-
+		var viewIDArr = PlayerList.Select(player => player.GetComponent<PhotonView>().ViewID).ToArray();
+		
 		//마스터가 섞인 순서를 다른 플레이어들에게 알려줌
 		pv.RPC(nameof(RPC_SetTurnQueue), RpcTarget.Others, viewIDArr);
 		pv.RPC(nameof(RPC_InitPlayers), RpcTarget.All);
@@ -66,7 +61,6 @@ public class TurnSystem : MonoBehaviour
 				}
 			}
 		}
-
 		PlayerList = tempList;
 	}
 

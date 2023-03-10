@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
+using System.Text;
 using DG.Tweening;
 using Photon.Pun;
 using TMPro;
@@ -24,14 +24,14 @@ public class IngamePresenter : MonoBehaviour
 	[SerializeField] private Transform casinoInfoObject;
 	[SerializeField] private TextMeshProUGUI casinoNumText;
 	[SerializeField] private TextMeshProUGUI prizeText;
-
+	[SerializeField] private TextMeshProUGUI bettingStateText;
 	[field: SerializeField] public List<TextMeshProUGUI> PlayersPrizeList { get; private set; } = new();
 
 	public Action DiceRollAction;
-
 	private PhotonView pv;
-
 	private ReactiveProperty<Casino> selectedCasino = new();
+	private StringBuilder sb = new();
+
 	private bool isPanelMoved;
 	private float elapse;
 
@@ -46,7 +46,7 @@ public class IngamePresenter : MonoBehaviour
 		});
 
 		// 매프레임 체크하면서 카지노 위에 마우스가 올라갔는지 체크 후 카지노에 마우스가 올라가있으면 카지노 정보 출력
-		Observable.EveryUpdate().Where(_ =>GameManager.Instance.IsGameStarted).Subscribe(_ =>
+		Observable.EveryUpdate().Where(_ => GameManager.Instance.IsGameStarted).Subscribe(_ =>
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit[] hits = Physics.RaycastAll(ray);
@@ -58,6 +58,7 @@ public class IngamePresenter : MonoBehaviour
 					if (casino != selectedCasino.Value)
 					{
 						selectedCasino.Value = casino;
+						casinoInfoObject.transform.DOKill();
 						casinoInfoObject.transform.DOMoveX(0, .5f);
 					}
 					isPanelMoved = true;
@@ -75,26 +76,52 @@ public class IngamePresenter : MonoBehaviour
 				if (elapse >= 0.3f)
 				{
 					selectedCasino.Value = null;
+					casinoInfoObject.transform.DOKill();
 					casinoInfoObject.transform.DOMoveX(-600, .5f);
 					elapse = 0f;
 				}
 			}
 		}).AddTo(gameObject);
 
-		selectedCasino.Where(value => value != null).Subscribe(value =>
+		selectedCasino.Where(casino => casino != null).Subscribe(casino =>
 		{
-			casinoNumText.text = $"카지노 {value.CasinoNum}";
+			casinoNumText.text = $"카지노 {casino.CasinoNum}";
 
-			string text = String.Empty;
-			for (int i = 0; i < value.PrizeList.Count; i++)
+			sb.Clear();
+			for (int i = 0; i < casino.PrizeList.Count; i++)
 			{
-				text += $"{i + 1}등 상금 : {value.PrizeList[i].MoneyData.Price} \n";
+				sb.Append($"{i + 1}등 상금 : {casino.PrizeList[i].MoneyData.Price} \n");
 			}
-			prizeText.text = text;
+			prizeText.text = sb.ToString();
+
+			sb.Clear();
+
+			if (casino.SortedList != null)
+			{
+				int rank = 1;
+				foreach (var value in casino.SortedList)
+				{
+					if (value.Value > 0)
+					{
+						sb.Append(rank switch
+						{
+							1 => "1st",
+							2 => "2nd",
+							3 => "3rd",
+							_ => $"{rank}th"
+						});
+
+						sb.Append($": {value.Key} => {value.Value} \n");
+						rank++;
+					}
+				}
+			}
 			
+			bettingStateText.text = sb.ToString();
+
 		}).AddTo(gameObject);
 	}
-	
+
 	public void InitUIEvent(Player player)
 	{
 		player.Model.IsMyTurn.Subscribe(value =>
@@ -111,12 +138,12 @@ public class IngamePresenter : MonoBehaviour
 
 		player.Model.Dice.Subscribe(value =>
 		{
-			diceAmountText.text = "나의 주사위 개수 :" + value;
+			diceAmountText.text = $"나의 주사위 개수 : {value}";
 		}).AddTo(gameObject);
 
 		player.Model.SpecialDice.Subscribe(value =>
 		{
-			sDiceAmountText.text = "나의 특수 주사위 개수 : " + value;
+			sDiceAmountText.text = $"나의 특수 주사위 개수 : {value}";
 		}).AddTo(gameObject);
 
 		// 플레이어 상금 텍스트 오브젝트 켜줌
