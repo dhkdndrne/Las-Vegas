@@ -73,6 +73,12 @@ MonoBehaviour:
   - RPC_InitCasino
   - RPC_ClientMoneyInit
   - RPC_ClientCardSuffle
+  - RPC_SetMyTurn
+  - RPC_SetTurnList
+  - RPC_SetGameState
+  - RPC_StartNextTurn
+  - RPC_EndPlayingTurn
+  - RPC_RequestGoNextTurn
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

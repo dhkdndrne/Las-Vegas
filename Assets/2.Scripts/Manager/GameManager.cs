@@ -5,7 +5,6 @@ using Bam.Singleton;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -39,11 +38,11 @@ public class GameManager : Singleton<GameManager>
 		TurnSystem.SetRandomTurn();
 
 		await UniTask.Delay(3000);
-		TurnSystem.StartNextTurn();
+		pv.RPC(nameof(TurnSystem.RPC_StartNextTurn),RpcTarget.All);
 		
-		pv.RPC(nameof(RPC_SetGameStartEnd),RpcTarget.All,true);
+		pv.RPC(nameof(RPC_SetGameState),RpcTarget.All,true);
 	}
 
 	[PunRPC]
-	private void RPC_SetGameStartEnd(bool value) => IsGameStarted = value;
+	private void RPC_SetGameState(bool value) => IsGameStarted = value;
 }

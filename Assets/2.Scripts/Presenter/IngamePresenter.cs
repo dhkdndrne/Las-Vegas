@@ -116,7 +116,7 @@ public class IngamePresenter : MonoBehaviour
 					}
 				}
 			}
-			
+
 			bettingStateText.text = sb.ToString();
 
 		}).AddTo(gameObject);
@@ -136,12 +136,12 @@ public class IngamePresenter : MonoBehaviour
 				pv.RPC(nameof(RPC_TurnOffDiceUI), RpcTarget.All);
 		}).AddTo(gameObject);
 
-		player.Model.Dice.Subscribe(value =>
+		player.Model.Dice.Where(_ => player.PV.IsMine).Subscribe(value =>
 		{
 			diceAmountText.text = $"나의 주사위 개수 : {value}";
 		}).AddTo(gameObject);
 
-		player.Model.SpecialDice.Subscribe(value =>
+		player.Model.SpecialDice.Where(_ => player.PV.IsMine).Subscribe(value =>
 		{
 			sDiceAmountText.text = $"나의 특수 주사위 개수 : {value}";
 		}).AddTo(gameObject);
@@ -161,20 +161,8 @@ public class IngamePresenter : MonoBehaviour
 	private void RPC_ShowDiceUI(int dot, int diceAmount, int sDiceAmount)
 	{
 		if (diceAmount == 0 && sDiceAmount == 0) return;
-		if (!diceUI.activeSelf)
-		{
-			foreach (var diceUIObj in diceUIList)
-			{
-				for (int i = 0; i < diceUIObj.childCount; i++)
-				{
-					diceUIObj.transform.GetChild(i).gameObject.SetActive(false);
-				}
 
-				diceUIObj.gameObject.SetActive(false);
-			}
-
-			diceUI.SetActive(true);
-		}
+		diceUI.SetActive(true);
 
 		if (!diceUIList[dot].gameObject.activeSelf)
 			diceUIList[dot].gameObject.SetActive(true);
@@ -187,5 +175,18 @@ public class IngamePresenter : MonoBehaviour
 	}
 
 	[PunRPC]
-	private void RPC_TurnOffDiceUI() => diceUI.SetActive(false);
+	private void RPC_TurnOffDiceUI()
+	{
+		foreach (var diceUIObj in diceUIList)
+		{
+			for (int i = 0; i < diceUIObj.childCount; i++)
+			{
+				diceUIObj.transform.GetChild(i).gameObject.SetActive(false);
+			}
+
+			diceUIObj.gameObject.SetActive(false);
+		}
+
+		diceUI.SetActive(false);
+	}
 }

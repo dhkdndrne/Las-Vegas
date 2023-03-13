@@ -35,4 +35,9 @@ public class PlayerModel
 		Dice.Value -= diceAmount;
 		SpecialDice.Value -= sDiceAmount;
 	}
+
+	public bool CheckHasDice()
+	{
+		return Dice.Value != 0 || SpecialDice.Value != 0;
+	}
 }

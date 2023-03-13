@@ -65,9 +65,6 @@ public class Casino : MonoBehaviour
 	{
 		bettingDiceDictionary[playerID] += diceAmount;
 		bettingDiceDictionary["Special"] += sDiceAmount;
-		
-		UtilClass.DebugLog($"{playerID} 배팅 개수 : {bettingDiceDictionary[playerID]}");
-		UtilClass.DebugLog($"Special 배팅 개수 : {bettingDiceDictionary["Special"]}");
 
 		SortedList = new List<KeyValuePair<string, int>>(bettingDiceDictionary);
 		SortedList.Sort((x, y) => y.Value.CompareTo(x.Value));

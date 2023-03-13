@@ -44,14 +44,22 @@ public class Player : MonoBehaviourPun
 						//주사위 개수 업데이트
 						pv.RPC(nameof(RPC_UpdateDiceAmount), RpcTarget.All, diceManager.DiceNumberDic[casinoNum], diceManager.DiceNumberDic[-casinoNum]);
 
+						//DiceManager 딕셔너리 초기화
+						diceManager.ResetDictionary();
+						
 						//베팅 끝
-						Model.IsBettingTime.Value = false;
+						pv.RPC(nameof(RPC_BettingTime), RpcTarget.All, false);
+						pv.RPC(nameof(RPC_SetMyTurn), RpcTarget.All, false);
+
+						//다음 턴 요청
+						pv.RPC(nameof(RPC_RequestGoNextTurn),RpcTarget.MasterClient);
 					}
 				}
 			}
 		}).AddTo(gameObject);
 	}
 
+	
 	public void InitPlayer(int playerNumber)
 	{
 		Model.InitModel(playerNumber, diceManager.SpecialDiceCount);
@@ -69,15 +77,14 @@ public class Player : MonoBehaviourPun
 	[PunRPC]
 	private void RPC_UpdateDiceAmount(int diceAmount, int sDiceAmount)
 	{
-		if (pv.IsMine)
-			Model.UpdateDiceAmount(diceAmount, sDiceAmount);
+		Model.UpdateDiceAmount(diceAmount, sDiceAmount);
 	}
 
 	[PunRPC]
-	public void RPC_StartMyTurn()
+	public void RPC_SetMyTurn(bool isMyTurn)
 	{
 		if (pv.IsMine)
-			Model.IsMyTurn.Value = true;
+			Model.IsMyTurn.Value = isMyTurn;
 	}
 
 	/// <summary>
@@ -87,8 +94,11 @@ public class Player : MonoBehaviourPun
 	private void RPC_RollDice() => diceManager.RollDice().Forget();
 
 	[PunRPC]
-	public void RPC_BettingTime() => Model.IsBettingTime.Value = true;
+	public void RPC_BettingTime(bool isBettingTime) => Model.IsBettingTime.Value = isBettingTime;
 
 	[PunRPC]
 	public void RPC_GetMoney(int money) => Model.Money.Value += money;
+
+	[PunRPC]
+	private void RPC_RequestGoNextTurn() => GameManager.Instance.TurnSystem.PV.RPC(nameof(GameManager.Instance.TurnSystem.RPC_StartNextTurn), RpcTarget.All);
 }

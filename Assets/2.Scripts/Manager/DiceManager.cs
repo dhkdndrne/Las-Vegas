@@ -17,14 +17,14 @@ public class DiceManager : MonoBehaviour
 	{
 		{ -1, 0 }, { -2, 0 }, { -3, 0 }, { -4, 0 }, { -5, 0 }, { -6, 0 },
 		{ 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 }, { 6, 0 }
-	};                                                                                
+	};
 
 	public readonly int DICE_COUNT = 8;
 	private readonly string DICE_PREFAB_NAME = "Dice";
 
 	public int RemainSpecialDice { get; private set; }
 	public int SpecialDiceCount { get; private set; }
-	
+
 	private void Start()
 	{
 		pv = GetComponent<PhotonView>();
@@ -59,10 +59,16 @@ public class DiceManager : MonoBehaviour
 		Player player = GameManager.Instance.TurnSystem.NowPlayingPlayer;
 		rollResultList.Clear();
 
-		for (int i = 0; i < player.Model.Dice.Value + player.Model.SpecialDice.Value; i++)
+		for (int i = 0; i < player.Model.Dice.Value; i++)
 		{
 			diceList[i].SetActivate(true);
 			rollResultList.Add(diceList[i].Roll());
+		}
+
+		for (int i = player.Model.SpecialDice.Value; i > 0; i--)
+		{
+			diceList[7 + i].SetActivate(true);
+			rollResultList.Add(diceList[7 + i].Roll());
 		}
 
 		var diceResultList = await UniTask.WhenAll(rollResultList);
@@ -76,22 +82,27 @@ public class DiceManager : MonoBehaviour
 		for (int i = 0; i < 6; i++)
 		{
 			GameManager.Instance.IngamePresenter.ShowDiceUI(i, DiceNumberDic[i + 1], DiceNumberDic[-(i + 1)]);
-			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.Others, i + 1, DiceNumberDic[i + 1]);
-			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.Others, -(i + 1), DiceNumberDic[-(i + 1)]);
+			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.All, i + 1, DiceNumberDic[i + 1]);
+			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.All, -(i + 1), DiceNumberDic[-(i + 1)]);
 		}
 
-		pv.RPC(nameof(RPC_TurnOffDiceObject),RpcTarget.All);
-		player.PV.RPC(nameof(player.RPC_BettingTime), RpcTarget.All);
-	}
-	[PunRPC]
-	private void RPC_TurnOffDiceObject()
-	{
 		foreach (var dice in diceList)
 		{
-			dice.gameObject.SetActive(false);
+			dice.SetActivate(false);
+		}
+
+		player.PV.RPC(nameof(player.RPC_BettingTime), RpcTarget.All, true);
+	}
+
+	public void ResetDictionary()
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.All, i + 1, 0);
+			pv.RPC(nameof(RPC_RefreshRolledDice), RpcTarget.All, -(i + 1), 0);
 		}
 	}
-	
+
 	[PunRPC]
 	private void RPC_RefreshRolledDice(int key, int value)
 	{
