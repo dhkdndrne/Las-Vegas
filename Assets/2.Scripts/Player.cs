@@ -46,24 +46,28 @@ public class Player : MonoBehaviourPun
 
 						//DiceManager 딕셔너리 초기화
 						diceManager.ResetDictionary();
-						
+
 						//베팅 끝
 						pv.RPC(nameof(RPC_BettingTime), RpcTarget.All, false);
 						pv.RPC(nameof(RPC_SetMyTurn), RpcTarget.All, false);
 
 						//다음 턴 요청
-						pv.RPC(nameof(RPC_RequestGoNextTurn),RpcTarget.MasterClient);
+						pv.RPC(nameof(RPC_RequestGoNextTurn), RpcTarget.MasterClient);
 					}
 				}
 			}
 		}).AddTo(gameObject);
 	}
 
-	
+
 	public void InitPlayer(int playerNumber)
 	{
 		Model.InitModel(playerNumber, diceManager.SpecialDiceCount);
 		GameManager.Instance.IngamePresenter.InitUIEvent(this);
+		
+		if (pv.IsMine && PhotonManager.Instance.IsMaster() && diceManager.RemainSpecialDice > 0)
+			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_BetRemainSpecialDice), RpcTarget.All, diceManager.RemainSpecialDice);
+		
 	}
 
 	private void RollDice()

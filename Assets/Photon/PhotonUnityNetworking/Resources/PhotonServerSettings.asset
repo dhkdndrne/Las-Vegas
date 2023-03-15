@@ -79,6 +79,11 @@ MonoBehaviour:
   - RPC_StartNextTurn
   - RPC_EndPlayingTurn
   - RPC_RequestGoNextTurn
+  - RPC_CalculateCasinoPrize
+  - RPC_DeleteEqualPlayer
+  - RPC_GivePrize
+  - RPC_DeleteEqualValuePlayer
+  - RPC_BetRemainSpecialDice
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

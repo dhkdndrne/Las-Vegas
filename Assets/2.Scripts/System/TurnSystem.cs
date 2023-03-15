@@ -54,6 +54,7 @@ public class TurnSystem : MonoBehaviour
 		{
 			UtilClass.DebugLog("모든 플레이어 배팅 완료");
 			// 정산하기 추가
+			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_CalculateCasinoPrize),RpcTarget.MasterClient);
 			return;
 		}
 		

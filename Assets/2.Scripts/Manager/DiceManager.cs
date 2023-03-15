@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Bam.Singleton;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
-using UniRx;
 using UnityEngine;
 
 public class DiceManager : MonoBehaviour

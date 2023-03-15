@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Bam.Extensions;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
@@ -23,7 +24,7 @@ public class Casino : MonoBehaviour
 		{ "Special", 0 }
 	};
 	public List<KeyValuePair<string, int>> SortedList { get; private set; }
-	
+
 	private PhotonView pv;
 	public PhotonView PV => pv;
 
@@ -43,7 +44,7 @@ public class Casino : MonoBehaviour
 			bettingDiceDictionary.Remove($"Player {i}");
 		}
 	}
-	
+
 	public void SetPrize(List<Money> prizeList)
 	{
 		prizeList = prizeList.OrderByDescending(n => n.MoneyData.Price).ToList();
@@ -59,14 +60,68 @@ public class Casino : MonoBehaviour
 			prize.MoveToPostition(v3TargetPos + (v3Offset * index++));
 		}
 	}
-	
+
 	[PunRPC]
 	public void RPC_BetDice(string playerID, int diceAmount, int sDiceAmount)
 	{
-		bettingDiceDictionary[playerID] += diceAmount;
+		if (!playerID.IsNullOrWhitespace())
+			bettingDiceDictionary[playerID] += diceAmount;
+
 		bettingDiceDictionary["Special"] += sDiceAmount;
 
 		SortedList = new List<KeyValuePair<string, int>>(bettingDiceDictionary);
 		SortedList.Sort((x, y) => y.Value.CompareTo(x.Value));
+	}
+
+	/// <summary>
+	/// 배팅 개수 같은 플레이어 삭제
+	/// </summary>
+	[PunRPC]
+	public void RPC_DeleteEqualValuePlayer()
+	{
+		if (!pv.IsMine)
+			return;
+		
+		UtilClass.DebugLog("응애 2",Define.LogType.Warning);
+		int tempValue = int.MinValue;
+		SortedList = SortedList.Where(x =>
+		{
+			if (tempValue == x.Value || x.Value == 0)
+				return false;
+
+			tempValue = x.Value;
+			return true;
+		}).ToList();
+
+		int index = 1;
+		foreach (var player in SortedList)
+		{
+			UtilClass.DebugLog($"카지노 {CasinoNum} \n {index++}등 : {player.Key} / 배팅한 주사위 개수 {player.Value}",Define.LogType.Try);
+		}
+	}
+
+	[PunRPC]
+	public void RPC_GivePrize()
+	{
+		if (!pv.IsMine)
+			return;
+		
+		UtilClass.DebugLog("응애 3",Define.LogType.Warning);
+		for (int i = 0; i < PrizeList.Count; i++)
+		{
+			if (i == SortedList.Count)
+				break;
+			
+			if (!SortedList[i].Key.Equals("Special"))
+			{
+				var number = int.Parse(SortedList[i].Key.Split(' ')[1]); //플레이어 숫자만
+				Player player = GameManager.Instance.TurnSystem.PlayerList.Where(p => p.Model.PlayerNumber == number).First();
+
+				if (player.PV.IsMine)
+					player.PV.RPC(nameof(player.RPC_GetMoney), RpcTarget.All, PrizeList[i].MoneyData.Price);
+
+				UtilClass.DebugLog($"{i +1}등  {SortedList[i].Key}에게 {PrizeList[i].MoneyData.Price} 추가");
+			}
+		}
 	}
 }
