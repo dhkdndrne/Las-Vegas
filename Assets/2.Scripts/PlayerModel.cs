@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerModel
 {
-	private static int DICE_COUNT = 8;
+	private static int DICE_COUNT = 1;
 
 	/*
 	 *	두명이서 플레이하면 중립주사위 4개

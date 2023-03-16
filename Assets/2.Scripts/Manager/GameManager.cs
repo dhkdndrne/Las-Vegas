@@ -20,6 +20,7 @@ public class GameManager : Singleton<GameManager>
 	private PhotonView pv;
 	public Action InitAction;
 	public bool IsGameStarted { get; private set; }
+	public int round;
 	#endregion
 	
 	protected override void Awake()
@@ -35,14 +36,23 @@ public class GameManager : Singleton<GameManager>
 	public async UniTaskVoid InitGame()
 	{
 		InitAction?.Invoke();
+		CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_InitCasino), RpcTarget.All);
+		
 		TurnSystem.SetRandomTurn();
 
 		await UniTask.Delay(3000);
-		pv.RPC(nameof(TurnSystem.RPC_StartNextTurn),RpcTarget.All);
-		
+		pv.RPC(nameof(TurnSystem.RPC_StartNextTurn),RpcTarget.MasterClient);
 		pv.RPC(nameof(RPC_SetGameState),RpcTarget.All,true);
 	}
 
 	[PunRPC]
 	private void RPC_SetGameState(bool value) => IsGameStarted = value;
+
+	public async UniTaskVoid StartNextRound()
+	{
+		CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_InitCasino), RpcTarget.All);
+		
+		await UniTask.Delay(3000);
+		pv.RPC(nameof(TurnSystem.RPC_SetNextRoundTurn),RpcTarget.MasterClient);
+	}
 }

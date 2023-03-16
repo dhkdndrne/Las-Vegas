@@ -33,15 +33,36 @@ public class TurnSystem : MonoBehaviour
 			(PlayerList[index1], PlayerList[index2]) = (PlayerList[index2], PlayerList[index1]);
 		}
 
+		AnnouncePlayerList();
+	}
+
+	[PunRPC]
+	public void RPC_SetNextRoundTurn()
+	{
+		//처음 시작 했던 사람 다음 차례부터 시작
+		//첫 플레이어를 끝으로 보내고 처음 인덱스 삭제
+		PlayerList.Add(PlayerList[0]);
+		PlayerList.RemoveAt(0);
+
+		AnnouncePlayerList();
+		
+		PV.RPC(nameof(RPC_StartNextTurn),RpcTarget.MasterClient);
+	}
+
+	/// <summary>
+	/// 플레이어 리스트를 추가하고
+	/// 마스터가 플레이어 순서를 다른 유저에게 알림
+	/// </summary>
+	private void AnnouncePlayerList()
+	{
 		canPlayPlayerList.AddRange(PlayerList);
 		var viewIDArr = PlayerList.Select(player => player.GetComponent<PhotonView>().ViewID).ToArray();
-
+		
 		//마스터가 섞인 순서를 다른 플레이어들에게 알려줌
 		PV.RPC(nameof(RPC_SetTurnList), RpcTarget.Others, viewIDArr);
 		PV.RPC(nameof(RPC_InitPlayers), RpcTarget.All);
 	}
-
-
+	
 	[PunRPC]
 	public void RPC_StartNextTurn()
 	{
@@ -53,7 +74,6 @@ public class TurnSystem : MonoBehaviour
 		if (canPlayPlayerList.Count == 0)
 		{
 			UtilClass.DebugLog("모든 플레이어 배팅 완료");
-			// 정산하기 추가
 			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_CalculateCasinoPrize),RpcTarget.MasterClient);
 			return;
 		}
@@ -61,7 +81,6 @@ public class TurnSystem : MonoBehaviour
 		playingPlayerIndex = playingPlayerIndex + 1 > canPlayPlayerList.Count - 1 ? 0 : playingPlayerIndex + 1;
 		NowPlayingPlayer = canPlayPlayerList[playingPlayerIndex];
 		NowPlayingPlayer.PV.RPC(nameof(NowPlayingPlayer.RPC_SetMyTurn), RpcTarget.All, true);
-
 	}
 
 	[PunRPC]

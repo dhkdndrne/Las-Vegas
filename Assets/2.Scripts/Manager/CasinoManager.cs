@@ -20,11 +20,11 @@ public class CasinoManager : Singleton<CasinoManager>
 		bankSystem = GetComponent<BankSystem>();
 
 		GameManager.Instance.InitAction += bankSystem.Init;
-		GameManager.Instance.InitAction += () => PV.RPC(nameof(RPC_InitCasino), RpcTarget.All);
+		//GameManager.Instance.InitAction += () => PV.RPC(nameof(RPC_InitCasino), RpcTarget.All);
 	}
 
 	[PunRPC]
-	private void RPC_InitCasino()
+	public void RPC_InitCasino()
 	{
 		foreach (var casino in Casinos)
 		{
@@ -35,18 +35,16 @@ public class CasinoManager : Singleton<CasinoManager>
 	[PunRPC]
 	public void RPC_CalculateCasinoPrize()
 	{
-		UtilClass.DebugLog("응애 1",Define.LogType.Warning);
 		foreach (var casino in Casinos)
 		{
-			//if (!casino.PV.IsMine)
-				//break;
-
-			if (casino.SortedList == null || casino.SortedList.Count == 0)
-				continue;
-
-			casino.PV.RPC(nameof(casino.RPC_DeleteEqualValuePlayer), RpcTarget.All);
-			casino.PV.RPC(nameof(casino.RPC_GivePrize), RpcTarget.All);
+			if (casino.SortedList != null && casino.SortedList.Count > 0)
+			{
+				casino.PV.RPC(nameof(casino.RPC_DeleteEqualValuePlayer), RpcTarget.MasterClient);
+				casino.PV.RPC(nameof(casino.RPC_GivePrize), RpcTarget.MasterClient);
+			}
+			casino.PV.RPC(nameof(casino.RPC_DeleteMoneyCard),RpcTarget.All);
 		}
+		GameManager.Instance.StartNextRound().Forget();
 	}
 
 	/// <summary>

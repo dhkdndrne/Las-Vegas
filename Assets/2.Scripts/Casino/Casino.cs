@@ -79,10 +79,6 @@ public class Casino : MonoBehaviour
 	[PunRPC]
 	public void RPC_DeleteEqualValuePlayer()
 	{
-		if (!pv.IsMine)
-			return;
-		
-		UtilClass.DebugLog("응애 2",Define.LogType.Warning);
 		int tempValue = int.MinValue;
 		SortedList = SortedList.Where(x =>
 		{
@@ -96,17 +92,13 @@ public class Casino : MonoBehaviour
 		int index = 1;
 		foreach (var player in SortedList)
 		{
-			UtilClass.DebugLog($"카지노 {CasinoNum} \n {index++}등 : {player.Key} / 배팅한 주사위 개수 {player.Value}",Define.LogType.Try);
+			UtilClass.DebugLog($"카지노 {CasinoNum} \n {index++}등 : {player.Key} / 배팅한 주사위 개수 {player.Value}",Define.LogType.Success);
 		}
 	}
 
 	[PunRPC]
 	public void RPC_GivePrize()
 	{
-		if (!pv.IsMine)
-			return;
-		
-		UtilClass.DebugLog("응애 3",Define.LogType.Warning);
 		for (int i = 0; i < PrizeList.Count; i++)
 		{
 			if (i == SortedList.Count)
@@ -116,12 +108,24 @@ public class Casino : MonoBehaviour
 			{
 				var number = int.Parse(SortedList[i].Key.Split(' ')[1]); //플레이어 숫자만
 				Player player = GameManager.Instance.TurnSystem.PlayerList.Where(p => p.Model.PlayerNumber == number).First();
-
-				if (player.PV.IsMine)
-					player.PV.RPC(nameof(player.RPC_GetMoney), RpcTarget.All, PrizeList[i].MoneyData.Price);
-
+				
+				player.PV.RPC(nameof(player.RPC_GetMoney), RpcTarget.All, PrizeList[i].MoneyData.Price);
 				UtilClass.DebugLog($"{i +1}등  {SortedList[i].Key}에게 {PrizeList[i].MoneyData.Price} 추가");
 			}
 		}
+	}
+
+	[PunRPC]
+	public void RPC_DeleteMoneyCard()
+	{
+		foreach (var moneyCard in PrizeList)
+		{
+			moneyCard.gameObject.SetActive(false);
+		}
+
+		bettingDiceDictionary = bettingDiceDictionary.ToDictionary(x => x.Key, x => 0);
+		
+		PrizeList?.Clear();
+		SortedList?.Clear();
 	}
 }

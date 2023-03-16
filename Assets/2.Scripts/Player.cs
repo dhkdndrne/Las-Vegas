@@ -52,7 +52,7 @@ public class Player : MonoBehaviourPun
 						pv.RPC(nameof(RPC_SetMyTurn), RpcTarget.All, false);
 
 						//다음 턴 요청
-						pv.RPC(nameof(RPC_RequestGoNextTurn), RpcTarget.MasterClient);
+						GameManager.Instance.TurnSystem.PV.RPC(nameof(GameManager.Instance.TurnSystem.RPC_StartNextTurn), RpcTarget.MasterClient);
 					}
 				}
 			}
@@ -102,7 +102,4 @@ public class Player : MonoBehaviourPun
 
 	[PunRPC]
 	public void RPC_GetMoney(int money) => Model.Money.Value += money;
-
-	[PunRPC]
-	private void RPC_RequestGoNextTurn() => GameManager.Instance.TurnSystem.PV.RPC(nameof(GameManager.Instance.TurnSystem.RPC_StartNextTurn), RpcTarget.All);
 }

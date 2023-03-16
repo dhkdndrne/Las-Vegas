@@ -36,7 +36,8 @@ public class DiceManager : MonoBehaviour
 		//	3명이서 플레이하면 중립주사위 2개는 눈금에 맞는 카지노에 넣음
 
 		int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-		SpecialDiceCount = playerCount == 2 ? 4 : 2;
+		//SpecialDiceCount = playerCount == 2 ? 4 : 2;
+		SpecialDiceCount = 0;
 		RemainSpecialDice = playerCount == 3 ? 2 : 0;
 
 		pv.RPC(nameof(RPC_RefreshSpecialDice), RpcTarget.Others, SpecialDiceCount, RemainSpecialDice);
