@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using UnityEngine;
@@ -39,17 +40,20 @@ public class DiceManager : MonoBehaviour
 		//SpecialDiceCount = playerCount == 2 ? 4 : 2;
 		SpecialDiceCount = 0;
 		RemainSpecialDice = playerCount == 3 ? 2 : 0;
-
-		pv.RPC(nameof(RPC_RefreshSpecialDice), RpcTarget.Others, SpecialDiceCount, RemainSpecialDice);
-
+		
 		for (int i = 0; i < DICE_COUNT + SpecialDiceCount; i++)
 		{
 			diceList.Add(PhotonNetwork.Instantiate(DICE_PREFAB_NAME, new Vector3(0, 5, 0), Quaternion.identity).GetComponent<Dice>());
 
 			if (DICE_COUNT + SpecialDiceCount - i <= SpecialDiceCount)
 				diceList[i].ChangeDiceColor(Define.DiceType.Special);
+		}
+		
+		pv.RPC(nameof(RPC_RefreshDiceAmount), RpcTarget.Others, SpecialDiceCount, RemainSpecialDice);
 
-			diceList[i].SetActivate(false);
+		foreach (var dice in diceList)
+		{
+			dice.SetActivate(false);
 		}
 	}
 
@@ -109,9 +113,12 @@ public class DiceManager : MonoBehaviour
 	}
 
 	[PunRPC]
-	private void RPC_RefreshSpecialDice(int sDiceAmount, int remainsDiceAmount)
+	private void RPC_RefreshDiceAmount(int sDiceAmount, int remainsDiceAmount)
 	{
 		SpecialDiceCount = sDiceAmount;
 		RemainSpecialDice = remainsDiceAmount;
+
+		diceList = FindObjectsOfType<Dice>().ToList();
+		UtilClass.DebugLog($"주사위 개수 ={diceList.Count}");
 	}
 }

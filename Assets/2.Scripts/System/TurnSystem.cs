@@ -5,6 +5,7 @@ using System.Linq;
 using Photon.Pun;
 using TMPro;
 using UnityEngine;
+using UniRx;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
@@ -45,8 +46,8 @@ public class TurnSystem : MonoBehaviour
 		PlayerList.RemoveAt(0);
 
 		AnnouncePlayerList();
-		
-		PV.RPC(nameof(RPC_StartNextTurn),RpcTarget.MasterClient);
+
+		PV.RPC(nameof(RPC_StartNextTurn), RpcTarget.MasterClient);
 	}
 
 	/// <summary>
@@ -57,12 +58,12 @@ public class TurnSystem : MonoBehaviour
 	{
 		canPlayPlayerList.AddRange(PlayerList);
 		var viewIDArr = PlayerList.Select(player => player.GetComponent<PhotonView>().ViewID).ToArray();
-		
+
 		//마스터가 섞인 순서를 다른 플레이어들에게 알려줌
 		PV.RPC(nameof(RPC_SetTurnList), RpcTarget.Others, viewIDArr);
 		PV.RPC(nameof(RPC_InitPlayers), RpcTarget.All);
 	}
-	
+
 	[PunRPC]
 	public void RPC_StartNextTurn()
 	{
@@ -74,10 +75,10 @@ public class TurnSystem : MonoBehaviour
 		if (canPlayPlayerList.Count == 0)
 		{
 			UtilClass.DebugLog("모든 플레이어 배팅 완료");
-			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_CalculateCasinoPrize),RpcTarget.MasterClient);
+			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_CalculateCasinoPrize), RpcTarget.MasterClient);
 			return;
 		}
-		
+
 		playingPlayerIndex = playingPlayerIndex + 1 > canPlayPlayerList.Count - 1 ? 0 : playingPlayerIndex + 1;
 		NowPlayingPlayer = canPlayPlayerList[playingPlayerIndex];
 		NowPlayingPlayer.PV.RPC(nameof(NowPlayingPlayer.RPC_SetMyTurn), RpcTarget.All, true);
@@ -110,5 +111,11 @@ public class TurnSystem : MonoBehaviour
 		{
 			PlayerList[i].InitPlayer(i);
 		}
+
+		PhotonManager.Instance.LeftRoomSubject.Where(_ => PhotonManager.Instance.IsMaster()).Subscribe(playerNumber =>
+		{
+			PlayerList.RemoveAt(playerNumber);
+			PV.RPC(nameof(RPC_StartNextTurn), RpcTarget.MasterClient);
+		});
 	}
 }

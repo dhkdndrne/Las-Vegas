@@ -44,6 +44,7 @@ public class CasinoManager : Singleton<CasinoManager>
 			}
 			casino.PV.RPC(nameof(casino.RPC_DeleteMoneyCard),RpcTarget.All);
 		}
+		
 		GameManager.Instance.StartNextRound().Forget();
 	}
 

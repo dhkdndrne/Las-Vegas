@@ -146,6 +146,15 @@ public class IngamePresenter : MonoBehaviour
 			sDiceAmountText.text = $"나의 특수 주사위 개수 : {value}";
 		}).AddTo(gameObject);
 
+		
+		PhotonManager.Instance.LeftRoomSubject.Subscribe(playerNumber =>
+		{
+			if (player.PV.IsMine)
+			{
+				PlayersPrizeList[playerNumber].gameObject.SetActive(false);
+			}
+		});
+		
 		// 플레이어 상금 텍스트 오브젝트 켜줌
 		// 플레이어들의 상금 텍스트 표시
 		PlayersPrizeList[player.Model.PlayerNumber].gameObject.SetActive(true);

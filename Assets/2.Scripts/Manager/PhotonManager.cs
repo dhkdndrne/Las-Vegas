@@ -8,6 +8,7 @@ using Photon.Pun.UtilityScripts;
 using Photon.Realtime;
 using UniRx;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class PhotonManager : MonoBehaviourPunCallbacks
 {
@@ -17,22 +18,23 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 	private PhotonView pv;
 
 	public Subject<int> LeftRoomSubject { get; private set; } = new();
-	public Subject<(int,string)> JoinRoomSubject { get; private set; } = new();
-	public Subject<(int,string)> MasterChangedSubject { get; private set; } = new();
-	
+	public Subject<(int, string)> JoinRoomSubject { get; private set; } = new();
+	public Subject<(int, string)> MasterChangedSubject { get; private set; } = new();
+
 	private void Awake()
 	{
 		instance = this;
 		pv = GetComponent<PhotonView>();
 		//Screen.SetResolution(1920, 1080, false);
 		Screen.SetResolution(800, 600, false);
+
 	}
 
 	public void OnBtn_EnterRoom()
 	{
 		PhotonNetwork.ConnectUsingSettings();
 	}
-	
+
 	public override void OnLeftRoom()
 	{
 		PhotonNetwork.Disconnect();
@@ -45,14 +47,18 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 	public override void OnJoinRandomFailed(short returnCode, string message)
 	{
 		PhotonNetwork.LocalPlayer.NickName = "Player 0";
-		PhotonNetwork.JoinOrCreateRoom("Player 0 의 방", new RoomOptions { MaxPlayers = 4 }, null);
+		RoomOptions roomOptions = new RoomOptions();
+		roomOptions.MaxPlayers = 4;
+		roomOptions.CleanupCacheOnLeave = false;
+
+		PhotonNetwork.JoinOrCreateRoom($"방 {Random.Range(1, 101)}", roomOptions,null);
 	}
-	
+
 	public override void OnConnectedToMaster()
 	{
 		PhotonNetwork.JoinRandomRoom();
 	}
-	
+
 	/// <summary>
 	/// 방에 참가했을때
 	/// </summary>
@@ -67,18 +73,23 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 	private async UniTaskVoid GetPlayerNum()
 	{
 		await UniTask.WaitUntil(() => PhotonNetwork.LocalPlayer.GetPlayerNumber() != -1);
-		JoinRoomSubject.OnNext((PhotonNetwork.LocalPlayer.GetPlayerNumber(),PhotonNetwork.LocalPlayer.NickName));
+		JoinRoomSubject.OnNext((PhotonNetwork.LocalPlayer.GetPlayerNumber(), PhotonNetwork.LocalPlayer.NickName));
 	}
-	
+
 	public override void OnMasterClientSwitched(Photon.Realtime.Player newMasterClient)
 	{
-		MasterChangedSubject.OnNext((newMasterClient.GetPlayerNumber(),$"{newMasterClient.NickName} 의 방"));
+		UtilClass.DebugLog($"마스터 바뀜 {newMasterClient.NickName}");
+		MasterChangedSubject.OnNext((newMasterClient.GetPlayerNumber(), $"{newMasterClient.NickName} 의 방"));
 	}
 
 	public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
 	{
+		if (IsMaster())
+		{
+			//MasterChangedSubject.OnNext()
+		}
 		LeftRoomSubject.OnNext(otherPlayer.GetPlayerNumber());
 	}
-	
+
 	public bool IsMaster() => PhotonNetwork.LocalPlayer.IsMasterClient;
 }

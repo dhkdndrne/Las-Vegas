@@ -60,7 +60,14 @@ public class LobbyRoomPresenter : MonoBehaviour
 
 		PhotonManager.Instance.LeftRoomSubject.Subscribe(index =>
 		{
-			ChangeIndex(index);
+			if (!GameManager.Instance.IsGameStarted)
+			{
+				ChangeIndex(index);
+			}
+			else
+			{
+				
+			}
 
 		}).AddTo(gameObject);
 
@@ -139,6 +146,7 @@ public class LobbyRoomPresenter : MonoBehaviour
 	private void PlayGame()
 	{
 		pv.RPC(nameof(RPC_PlayGame), RpcTarget.All);
+		PhotonNetwork.CurrentRoom.IsOpen = false;
 		StartCoroutine(Co_InitGame());
 	}
 
