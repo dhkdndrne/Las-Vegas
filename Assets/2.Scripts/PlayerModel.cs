@@ -6,8 +6,6 @@ using UnityEngine;
 [System.Serializable]
 public class PlayerModel
 {
-	private static int DICE_COUNT = 1;
-
 	/*
 	 *	두명이서 플레이하면 중립주사위 4개
 	 *	3~4명이서 게임하면 중립 주사위 2개씩
@@ -23,10 +21,10 @@ public class PlayerModel
 	public ReactiveProperty<bool> IsMyTurn { get; private set; } = new();
 	public ReactiveProperty<bool> IsBettingTime { get; private set; } = new();
 
-	public void InitModel(int playerNumber,int specialDiceAmount)
+	public void InitModel(int playerNumber,int diceAmount,int specialDiceAmount)
 	{
 		PlayerNumber = playerNumber;
-		Dice.Value = DICE_COUNT;
+		Dice.Value = diceAmount;
 		SpecialDice.Value = specialDiceAmount;
 	}
 

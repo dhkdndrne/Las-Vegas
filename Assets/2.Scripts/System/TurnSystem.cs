@@ -37,6 +37,17 @@ public class TurnSystem : MonoBehaviour
 		AnnouncePlayerList();
 	}
 
+	public void ClearPlayerList()
+	{
+		var players = FindObjectsOfType<Player>();
+
+		foreach (var p in players)
+		{
+			Destroy(p.gameObject);
+		}
+		PlayerList.Clear();
+	}
+	
 	[PunRPC]
 	public void RPC_SetNextRoundTurn()
 	{
@@ -114,6 +125,9 @@ public class TurnSystem : MonoBehaviour
 
 		PhotonManager.Instance.LeftRoomSubject.Where(_ => PhotonManager.Instance.IsMaster()).Subscribe(playerNumber =>
 		{
+			if (PlayerList.Count == 0)
+				return;
+			
 			PlayerList.RemoveAt(playerNumber);
 			PV.RPC(nameof(RPC_StartNextTurn), RpcTarget.MasterClient);
 		});

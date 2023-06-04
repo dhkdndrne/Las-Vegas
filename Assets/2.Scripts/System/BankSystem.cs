@@ -25,17 +25,43 @@ public class BankSystem : MonoBehaviour
 	public void Init()
 	{
 		int index = 0;
-		//딕셔너리의 모든 돈 리스트에 넣어줌
-		foreach (var money in TOTALMONEY)
+
+		bool hasCard = FindObjectOfType<Money>();
+
+		if (!hasCard)
 		{
-			for (int i = 0; i < money.Value; i++)
+			UtilClass.DebugLog("없다");
+			//딕셔너리의 모든 돈 리스트에 넣어줌
+			foreach (var money in TOTALMONEY)
 			{
-				// 돈 카드 오브젝트 생성 및 초기화
-				var card = PhotonNetwork.Instantiate(MONEYCARDNAME, Vector3.one, Quaternion.identity).GetComponent<Money>();
-				card.Init(money.Key.ToString(), deckposition.position);
-				moneyCardList.Add(card);
+				for (int i = 0; i < money.Value; i++)
+				{
+					// 돈 카드 오브젝트 생성 및 초기화
+					var card = PhotonNetwork.Instantiate(MONEYCARDNAME, Vector3.one, Quaternion.identity).GetComponent<Money>();
+					card.Init(money.Key.ToString(), deckposition.position);
+					moneyCardList.Add(card);
+				}
+				index++;
 			}
-			index++;
+		}
+		else
+		{
+			UtilClass.DebugLog("있다");
+			moneyCardList.Clear();
+			foreach (var card in usedMoneyCardList)
+			{
+				card.gameObject.SetActive(true);
+			}
+			
+			usedMoneyCardList.Clear();
+			moneyCardList.AddRange(FindObjectsOfType<Money>().ToList());
+
+			foreach (var card in moneyCardList)
+			{
+				card.CardFront.SetActive(false);
+				card.CardBack.SetActive(true);
+				card.transform.SetPositionAndRotation(deckposition.position,Quaternion.Euler(-90f, 90f, 90f));
+			}
 		}
 		
 		//돈 섞기
@@ -75,8 +101,27 @@ public class BankSystem : MonoBehaviour
 	[PunRPC]
 	private void RPC_ClientMoneyInit()
 	{
-		var moneys = FindObjectsOfType<Money>();
-		moneyCardList.AddRange(moneys.ToList());
+		bool hasMoney = FindObjectOfType<Money>();
+
+		if (hasMoney)
+		{
+			moneyCardList.Clear();
+			foreach (var card in usedMoneyCardList)
+			{
+				card.gameObject.SetActive(true);
+			}
+
+			usedMoneyCardList.Clear();
+			moneyCardList.AddRange(FindObjectsOfType<Money>().ToList());
+
+			foreach (var card in moneyCardList)
+			{
+				card.CardFront.SetActive(false);
+				card.CardBack.SetActive(true);
+				card.transform.SetPositionAndRotation(deckposition.position, Quaternion.Euler(-90f, 90f, 90f));
+			}
+		}
+		else moneyCardList.AddRange(FindObjectsOfType<Money>().ToList());
 	}
 
 	public List<Money> GetPrizeList()

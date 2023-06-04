@@ -413,11 +413,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 456c2c3f35c651b4395a6d33ad867c64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardFront: {fileID: 3738754720143705158}
-  cardBack: {fileID: 8931568033447118024}
+  <CardFront>k__BackingField: {fileID: 3738754720143705158}
+  <CardBack>k__BackingField: {fileID: 8931568033447118024}
   charImage: {fileID: 6114792311706418588}
   bgImage: {fileID: 5964551113824245906}
   priceText: {fileID: 2465397728649486235}
+  MoneyData: {fileID: 0}
   canv: {fileID: 0}
 --- !u!114 &6352640953917960002
 MonoBehaviour:

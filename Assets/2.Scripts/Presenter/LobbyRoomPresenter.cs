@@ -22,14 +22,15 @@ public class LobbyRoomPresenter : MonoBehaviour
 	[SerializeField] private TextMeshProUGUI roomName;
 	[SerializeField] private Button readyBtn;
 	[SerializeField] private Button exitBtn;
-	
+
 	public bool[] readyPlayers = new bool[4];
 	private void Start()
 	{
 		pv = GetComponent<PhotonView>();
-		
+
 		exitBtn.onClick.AddListener(() =>
 		{
+			ResetLobbyUI();
 			roomObj.SetActive(false);
 			titleObj.SetActive(true);
 			PhotonNetwork.LeaveRoom();
@@ -60,15 +61,13 @@ public class LobbyRoomPresenter : MonoBehaviour
 
 		PhotonManager.Instance.LeftRoomSubject.Subscribe(index =>
 		{
-			if (!GameManager.Instance.IsGameStarted)
+			if(PhotonManager.Instance.IsMaster()) PhotonNetwork.CleanRpcBufferIfMine(pv);
+			
+			if (!GameManager.Instance.Model.isGameStarted)
 			{
 				ChangeIndex(index);
+				roomObj.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text = PhotonManager.Instance.IsMaster() ? "시작" : "준비";
 			}
-			else
-			{
-				
-			}
-
 		}).AddTo(gameObject);
 
 		PhotonManager.Instance.JoinRoomSubject.Subscribe(value =>
@@ -78,23 +77,23 @@ public class LobbyRoomPresenter : MonoBehaviour
 			titleObj.SetActive(false);
 			roomObj.SetActive(true);
 
-			for (int i = 0; i < 4; i++)
-			{
-				playerPanels[i].color = Color.black;
-				playerReadyTexts[i].SetActive(false);
-			}
-
 			roomObj.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text = PhotonManager.Instance.IsMaster() ? "시작" : "준비";
 			pv.RPC(nameof(RPC_RefreshJoinedPlayer), RpcTarget.AllBuffered, value.Item1, value.Item2);
 		}).AddTo(gameObject);
 
-		PhotonManager.Instance.MasterChangedSubject.Subscribe(value =>
-		{
-			roomName.text = value.Item2;
-			ChangeIndex(value.Item1);
+		// PhotonManager.Instance.MasterChangedSubject.Subscribe(value =>
+		// {
+		// 	roomName.text = value.Item2;
+		// 	ChangeIndex(value.Item1);
+		//
+		// 	roomObj.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text = PhotonManager.Instance.IsMaster() ? "시작" : "준비";
+		// }).AddTo(gameObject);
+		
+	}
 
-			roomObj.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text = PhotonManager.Instance.IsMaster() ? "시작" : "준비";
-		}).AddTo(gameObject);
+	public void ActivateRoomObject()
+	{
+		roomObj.gameObject.SetActive(true);
 	}
 
 	/// <summary>
@@ -112,6 +111,13 @@ public class LobbyRoomPresenter : MonoBehaviour
 			isLowerIndex = false;
 		}
 
+		ResetLobbyUI();
+
+		GetChangedPlayerNum(myIndex == 0 ? 0 : myIndex - 1, isLowerIndex).Forget();
+	}
+
+	private void ResetLobbyUI()
+	{
 		for (int i = 0; i < readyPlayers.Length; i++)
 		{
 			readyPlayers[i] = false;
@@ -119,10 +125,8 @@ public class LobbyRoomPresenter : MonoBehaviour
 			playerPanels[i].color = Color.black;
 			playerReadyTexts[i].SetActive(false);
 		}
-
-		GetChangedPlayerNum(myIndex - 1, isLowerIndex).Forget();
 	}
-
+	
 	/// <summary>
 	/// 플레이어 인덱스 다시 설정 후 바뀔때까지 대기
 	/// </summary>
@@ -133,7 +137,7 @@ public class LobbyRoomPresenter : MonoBehaviour
 		await UniTask.WaitUntil(() => isLowerIndex || index == PhotonNetwork.LocalPlayer.GetPlayerNumber());
 		PhotonNetwork.LocalPlayer.NickName = $"Player {PhotonNetwork.LocalPlayer.GetPlayerNumber()}";
 
-		for (int i = 0; i >= PhotonNetwork.CurrentRoom.PlayerCount; i++)
+		for (int i = 0; i > PhotonNetwork.CurrentRoom.PlayerCount; i++)
 		{
 			playerPanels[index].gameObject.SetActive(true);
 		}
@@ -155,7 +159,7 @@ public class LobbyRoomPresenter : MonoBehaviour
 		yield return new WaitForSeconds(1f);
 		GameManager.Instance.InitGame().Forget();
 	}
-	
+
 	/// <summary>
 	/// 레디상태에 따라 UI변경
 	/// </summary>
@@ -174,6 +178,12 @@ public class LobbyRoomPresenter : MonoBehaviour
 	{
 		roomObj.SetActive(false);
 		PhotonNetwork.Instantiate("Player", Vector3.zero, Quaternion.identity);
+
+		for (int i = 0; i < readyPlayers.Length; i++)
+		{
+			pv.RPC(nameof(RPC_Ready), RpcTarget.AllBuffered, false, i);
+		}
+
 	}
 
 	/// <summary>

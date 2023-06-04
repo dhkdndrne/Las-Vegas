@@ -36,7 +36,7 @@ public class Casino : MonoBehaviour
 
 	private async UniTaskVoid RemovePlayerKeyAndInitList()
 	{
-		await UniTask.WaitUntil(() => GameManager.Instance.IsGameStarted);
+		await UniTask.WaitUntil(() => GameManager.Instance.Model.isGameStarted);
 
 		var playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
 		for (int i = 4; i >= playerCount; i--)
@@ -92,7 +92,7 @@ public class Casino : MonoBehaviour
 		int index = 1;
 		foreach (var player in SortedList)
 		{
-			UtilClass.DebugLog($"카지노 {CasinoNum} \n {index++}등 : {player.Key} / 배팅한 주사위 개수 {player.Value}",Define.LogType.Success);
+			UtilClass.DebugLog($"카지노 {CasinoNum} \n {index++}등 : {player.Key} / 배팅한 주사위 개수 {player.Value}",Define.LogType.Warning);
 		}
 	}
 

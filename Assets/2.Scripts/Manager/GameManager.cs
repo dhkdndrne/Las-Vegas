@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Bam.Singleton;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
+using UniRx;
 using UnityEngine;
 
 public class GameManager : Singleton<GameManager>, IPunObservable
@@ -19,8 +20,9 @@ public class GameManager : Singleton<GameManager>, IPunObservable
 
 	private PhotonView pv;
 	public Action InitAction;
-	public bool IsGameStarted { get; private set; }
-	public int round;
+	public Action GameOverAction;
+
+	public GameManagerModel Model { get; private set; } = new();
 
 	#endregion
 
@@ -29,6 +31,17 @@ public class GameManager : Singleton<GameManager>, IPunObservable
 		base.Awake();
 		pv = GetComponent<PhotonView>();
 		TurnSystem = GetComponent<TurnSystem>();
+
+		PhotonManager.Instance.LeftRoomSubject.Subscribe(index =>
+		{
+			if (Model.isGameStarted)
+			{
+				TurnSystem.PlayerList.RemoveAt(index);
+				
+				if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+					pv.RPC(nameof(RPC_GameOver), RpcTarget.All);
+			}
+		}).AddTo(gameObject);
 	}
 
 	/// <summary>
@@ -41,27 +54,33 @@ public class GameManager : Singleton<GameManager>, IPunObservable
 
 		TurnSystem.SetRandomTurn();
 
-		await UniTask.Delay(3000);
-		pv.RPC(nameof(TurnSystem.RPC_StartNextTurn), RpcTarget.MasterClient);
 		pv.RPC(nameof(RPC_SetGameState), RpcTarget.All, true);
 
-		round++;
+		await UniTask.Delay(3000);
+		pv.RPC(nameof(TurnSystem.RPC_StartNextTurn), RpcTarget.MasterClient);
+		pv.RPC(nameof(RPC_IncreaseRoundAndShowAnim), RpcTarget.All);
 	}
+	
+	[PunRPC]
+	private void RPC_SetGameState(bool value) => Model.isGameStarted = value;
 
 	[PunRPC]
-	private void RPC_SetGameState(bool value) => IsGameStarted = value;
+	private void RPC_IncreaseRoundAndShowAnim()
+	{
+		Model.Round.Value++;
+		IngamePresenter.ShowRoundAnimation().Forget();
+	}
 
 	public async UniTaskVoid StartNextRound()
 	{
-		round++;
-		if (round > 1)
+		if (Model.Round.Value >= 1)
 		{
 			UtilClass.DebugLog("게임 끝났땅");
-			GameOver();
+			pv.RPC(nameof(RPC_GameOver), RpcTarget.All);
 		}
 		else
 		{
-
+			pv.RPC(nameof(RPC_IncreaseRoundAndShowAnim), RpcTarget.All);
 			CasinoManager.Instance.PV.RPC(nameof(CasinoManager.Instance.RPC_InitCasino), RpcTarget.All);
 
 			await UniTask.Delay(3000);
@@ -73,22 +92,29 @@ public class GameManager : Singleton<GameManager>, IPunObservable
 	{
 		if (stream.IsWriting)
 		{
-			stream.SendNext(round);
+			stream.SendNext(Model.Round.Value);
 		}
 		else
 		{
-			round = (int)stream.ReceiveNext();
+			Model.Round.Value = (int)stream.ReceiveNext();
 		}
 	}
 
-	private void GameOver()
+	[PunRPC]
+	private void RPC_GameOver()
 	{
 		TurnSystem.PlayerList.Sort((p1, p2) => p1.Model.Money.Value < p2.Model.Money.Value ? 1 : -1);
-
-		int rank = 1;
-		foreach (var p in TurnSystem.PlayerList)
-		{
-			UtilClass.DebugLog($"{rank}등 = {p.Model.PlayerNumber} / {p.Model.Money}");
-		}
+		GameOverAction?.Invoke();
+		Model.isGameStarted = false;
+		Model.Round.Value = 0;
+		
+		TurnSystem.ClearPlayerList();
+		PhotonNetwork.CurrentRoom.IsOpen = true;
 	}
+}
+public class GameManagerModel
+{
+	public ReactiveProperty<int> Round { get; private set; } = new();
+	public bool isGameStarted;
+
 }

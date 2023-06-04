@@ -37,18 +37,21 @@ public class DiceManager : MonoBehaviour
 		//	3명이서 플레이하면 중립주사위 2개는 눈금에 맞는 카지노에 넣음
 
 		int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-		//SpecialDiceCount = playerCount == 2 ? 4 : 2;
-		SpecialDiceCount = 0;
+		SpecialDiceCount = playerCount == 2 ? 4 : 2;
 		RemainSpecialDice = playerCount == 3 ? 2 : 0;
+
+		bool hasDice = diceList.Count > 0;
+
 		
 		for (int i = 0; i < DICE_COUNT + SpecialDiceCount; i++)
 		{
-			diceList.Add(PhotonNetwork.Instantiate(DICE_PREFAB_NAME, new Vector3(0, 5, 0), Quaternion.identity).GetComponent<Dice>());
+			if (!hasDice)
+				diceList.Add(PhotonNetwork.Instantiate(DICE_PREFAB_NAME, new Vector3(0, 5, 0), Quaternion.identity).GetComponent<Dice>());
 
 			if (DICE_COUNT + SpecialDiceCount - i <= SpecialDiceCount)
 				diceList[i].ChangeDiceColor(Define.DiceType.Special);
 		}
-		
+
 		pv.RPC(nameof(RPC_RefreshDiceAmount), RpcTarget.Others, SpecialDiceCount, RemainSpecialDice);
 
 		foreach (var dice in diceList)

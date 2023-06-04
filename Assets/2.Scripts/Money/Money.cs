@@ -10,15 +10,15 @@ using System;
 
 public class Money : MonoBehaviour
 {
-	[SerializeField] private GameObject cardFront;
-	[SerializeField] private GameObject cardBack;
+	[field: SerializeField] public GameObject CardFront { get; private set; }
+	[field: SerializeField] public GameObject CardBack { get; private set; }
 
 	[SerializeField] private Image charImage;
 	[SerializeField] private Image bgImage;
 	[SerializeField] private TextMeshProUGUI priceText;
 
 	private PhotonView pv;
-	public MoneyData MoneyData { get; private set; }
+	public MoneyData MoneyData;/*{ get; private set; }*/
 	public Canvas canv;
 	
 	private void Awake()
@@ -29,7 +29,7 @@ public class Money : MonoBehaviour
 
 	public void Init(string moneyID, Vector3 v3Pos) => pv.RPC(nameof(RPC_Init), RpcTarget.All, moneyID, v3Pos);
 
-
+	
 	[PunRPC]
 	private void RPC_Init(string moneyID, Vector3 v3Pos)
 	{
@@ -40,7 +40,7 @@ public class Money : MonoBehaviour
 		priceText.text = MoneyData.Price.ToString();
 
 		transform.SetPositionAndRotation(v3Pos, Quaternion.Euler(-90f, 90f, 90f));
-		cardBack.SetActive(true);
+		CardBack.SetActive(true);
 	}
 
 	public void MoveToPostition(Vector3 v3TargetPos) => pv.RPC(nameof(RPC_CardMove),RpcTarget.All,v3TargetPos);
@@ -52,8 +52,8 @@ public class Money : MonoBehaviour
 		 await transform.DOMove(v3TargetPos, 1f);
 		 await transform.DORotate(new Vector3(0,90,90), 0.5f).OnComplete(() =>
 		 {
-		 	cardFront.SetActive(true);
-		 	cardBack.SetActive(false);
+		 	CardFront.SetActive(true);
+		    CardBack.SetActive(false);
 		 });
 		await transform.DORotate(new Vector3(90, 90, 90), 0.5f);
 	}

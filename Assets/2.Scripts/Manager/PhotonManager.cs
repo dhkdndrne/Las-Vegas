@@ -84,10 +84,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
 	public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
 	{
-		if (IsMaster())
-		{
-			//MasterChangedSubject.OnNext()
-		}
 		LeftRoomSubject.OnNext(otherPlayer.GetPlayerNumber());
 	}
 

@@ -57,12 +57,13 @@ public class Player : MonoBehaviourPun
 				}
 			}
 		}).AddTo(gameObject);
+		
 	}
 
 
 	public void InitPlayer(int playerNumber)
 	{
-		Model.InitModel(playerNumber, diceManager.SpecialDiceCount);
+		Model.InitModel(playerNumber,diceManager.DICE_COUNT, diceManager.SpecialDiceCount);
 		GameManager.Instance.IngamePresenter.InitUIEvent(this);
 		
 		if (pv.IsMine && PhotonManager.Instance.IsMaster() && diceManager.RemainSpecialDice > 0)
